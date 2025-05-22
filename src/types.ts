@@ -22,6 +22,8 @@ export interface QueueOptions {
    * seconds. Defaults to `5`
    */
   statInterval?: number;
+  decodePayload: <T>(payload: unknown) => T;
+  encodePayload: (payload: unknown) => unknown;
 }
 
 export interface ProcessorConfig<C> {
@@ -131,7 +133,7 @@ export interface QueueDoc {
   /** If a job is marked dead, this will contain the error information */
   error?: string;
   /** The job's payload. If an object or object-like value is passed, it will be passed through JSON.stringify */
-  payload: string | null;
+  payload: string | null | unknown;
   /** Information on the number of attempts and max allowed */
   attempts: {
     /** The current attempt number */
