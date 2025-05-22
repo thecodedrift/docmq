@@ -92,12 +92,12 @@ export class Queue<
   protected stats: QueueStats;
 
   /** Wrap the payload in a JSON encoding */
-  static encodePayload(p: unknown) {
+  static encodePayload(this: void, p: unknown) {
     return JSON.stringify({ _: p });
   }
 
   /** Decode the payload, stripping away the outer JSON encoding */
-  static decodePayload<T>(s: string | null | unknown) {
+  static decodePayload<T>(this: void, s: string | null | unknown) {
     return JSON.parse((s as string) ?? "{}")._ as T;
   }
 
@@ -117,8 +117,12 @@ export class Queue<
       },
       statInterval:
         options?.statInterval === 0 ? 0 : options?.statInterval ?? 5,
-      decodePayload: options?.decodePayload ?? this.constructor.decodePayload,
-      encodePayload: options?.encodePayload ?? this.constructor.encodePayload,
+      decodePayload:
+        options?.decodePayload ??
+        (this.constructor as typeof Queue).decodePayload,
+      encodePayload:
+        options?.encodePayload ??
+        (this.constructor as typeof Queue).encodePayload,
     };
 
     // initialize stats
