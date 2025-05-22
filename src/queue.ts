@@ -97,8 +97,8 @@ export class Queue<
   }
 
   /** Decode the payload, stripping away the outer JSON encoding */
-  static decodePayload<T>(s: string | null) {
-    return JSON.parse(s ?? "{}")._ as T;
+  static decodePayload<T>(s: string | null | unknown) {
+    return JSON.parse((s as string) ?? "{}")._ as T;
   }
 
   constructor(driver: Driver, name: string, options?: QueueOptions) {
@@ -117,6 +117,8 @@ export class Queue<
       },
       statInterval:
         options?.statInterval === 0 ? 0 : options?.statInterval ?? 5,
+      decodePayload: options?.decodePayload ?? this.constructor.decodePayload,
+      encodePayload: options?.encodePayload ?? this.constructor.encodePayload,
     };
 
     // initialize stats
@@ -242,7 +244,7 @@ export class Queue<
         ref: v.ref ?? v4(),
         ack: null,
         visible: begin,
-        payload: Queue.encodePayload(v.payload),
+        payload: this.opts.encodePayload(v.payload),
         attempts: {
           tries: 0,
           max: v.retries === 0 ? 0 : v.retries ?? 5,
@@ -422,7 +424,7 @@ export class Queue<
             driver: this.driver,
             name: this.name,
             doc,
-            payload: Queue.decodePayload<TData>(doc.payload),
+            payload: this.opts.decodePayload<TData>(doc.payload),
             handler,
             emitter: this.events,
             visibility,
