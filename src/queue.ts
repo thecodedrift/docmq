@@ -242,7 +242,7 @@ export class Queue<
         ref: v.ref ?? v4(),
         ack: null,
         visible: begin,
-        payload: Queue.encodePayload(v.payload),
+        payload: (this.constructor as typeof Queue).encodePayload(v.payload),
         attempts: {
           tries: 0,
           max: v.retries === 0 ? 0 : v.retries ?? 5,
@@ -422,7 +422,9 @@ export class Queue<
             driver: this.driver,
             name: this.name,
             doc,
-            payload: Queue.decodePayload<TData>(doc.payload),
+            payload: (this.constructor as typeof Queue).decodePayload<TData>(
+              doc.payload
+            ),
             handler,
             emitter: this.events,
             visibility,
